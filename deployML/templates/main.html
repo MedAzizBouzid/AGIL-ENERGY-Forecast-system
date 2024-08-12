@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fuel prediction</title>
+</head>
+<body>
+    <h1>Predict next delivery's quantity </h1>
+    <hr>
+     
+        
+   
+    <form action="result">
+        <label for="ANCSCP">  ANCSCP:</label>
+        <input type="number" id="ANCSCP" name="ANCSCP" ><br><br>
+      
+        <label for="DATLIV">DATLIV  :</label>
+        <input type="text" id="DATLIV" name="DATLIV"  placeholder="DD-MM-YYYY"><br><br>
+        <label for="LIBPRD">LIBPRD:</label>
+        <select type="text" id="LIBPRD" name="LIBPRD" > 
+            <option value="GASOIL">GASOIL</option>
+            <option value="SSP SUPER SANS PLOMB">SSP SUPER SANS PLOMB</option>
+            <option value="GASOIL 50">GASOIL 50</option>
+            <option value="GAZOIL SANS SOUFRE">GAZOIL SANS SOUFRE</option>
+            <option value="APS AGILIX PREMIUM ESS.">APS AGILIX PREMIUM ESS.</option>      
+            <option value="APG AGILIX PREMIUM GAS.">APG AGILIX PREMIUM GAS.</option>
+        </select> <br><br>
+        <label for="LIBGVR">LIBGVR:</label>
+        <label for="libgvr">LIBGVR:</label>
+        <select id="libgvr" name="libgvr" onchange="updateLiblocOptions()">
+            <option value="">Select a LIBGVR</option>
+            <!-- LIBGVR options will be populated here -->
+        </select> <br><br>
+
+        <label for="libloc">LIBLOC:</label>
+        <select id="libloc" name="libloc">
+            <option value="">Select a LIBLOC</option>
+            <!-- LIBLOC options will be populated here -->
+        </select><br><br>
+        <label for="prixHT">prixHT  :</label>
+        <input type="text" id="prixHT" name="prixHT"  placeholder="exemple 1212.121"><br><br>
+        <br><br>
+    
+        <input type="submit" >
+      </form>
+      
+
+
+
+
+      <script>
+        // Data for LIBGVR and LIBLOC
+        const data = {
+            "ARIANA": ["ARIANA", "ENNASR", "BORJ EL AMRI", "M'NIHLA", "RAOUED", "CEBALET B AMMAR"],
+            "BEJA": ["AMDOUN", "BEJA", "SLOUGUIA", "OUECHTATA", "SIDI SMAIL", "GOUBELLAT", "MEDJEZ EL BAB", "I D E N"],
+            "BEN AROUS": ["RADES", "HAMMAM-LIF", "BORJ CEDRIA", "MORNAG", "BOUMHAL", "EL MOUROUJ", "BEN AROUS", "BIR EL KASSAA", "FOUCHANA"],
+            "BIZERTE": ["MENZEL BOURGUIBA", "MATEUR", "KHETMINE", "SEJNENE", "ZARZOUNA", "BIZERTE", "RAS DJEBEL", "RAF RAF", "GHAR EL MELEH"],
+            "GABES": ["EL HAMMA", "KETTANA", "MARETH", "GABES", "GHANNOUCHE", "OUEDHREF", "MENZEL EL HABIB", "TEBOULBOU"],
+            "GAFSA": ["SIDI IICH", "MOULARES", "METLAOUI", "EL GUETAR", "GAFSA"],
+            "JENDOUBA": ["BOUSALEM", "TABARKA", "BALTA", "JENDOUBA"],
+            "KAIROUAN": ["KAIROUAN", "SIDI AMOR BOUHAJLA", "HAFFOUZ", "EL BATEN", "EL ALA", "HAJEB EL AYOUN", "OUESLATIA", "CHERARDA", "SIDI ALI BEN NASRALL", "MENZEL M'HIRI"],
+            "KASSERINE": ["KASSERINE", "FERIANA", "MAGEL BEL ABBES", "SBIBA", "THALA", "FOUSSANA", "SBEITLA"],
+            "KEBILI": ["OUM ESSOUMAA", "KEBILI", "SOUK LAHAD", "DOUZ", "ELFAOUAR"],
+            "LE KEF": ["EL KSOUR", "LE SERS", "LE KEF", "DAHMANI"],
+            "MAHDIA": ["KSOUR ESSAF", "SIDI ALOUANE", "SOUASSI", "OULED CHAMEKH", "MENZEL HACHED", "CHEBBA", "REJICHE", "MELLOULECH", "KERKER", "EL JEM"],
+            "MANOUBA": ["BORJ EL AMRI", "DENDEN"],
+            "MEDENINE": ["MEDENINE", "EL KANTRA", "BEN GUERDENE", "HOUMT SOUK", "JORF", "HASSI AMOR", "JERBA", "ZARZIS"],
+            "MONASTIR": ["MENZEL EL HAYET", "JAMMEL", "TOUZA", "KSAR HELLAL", "MONASTIR", "EL OUERDANINE", "BEMBLA", "SIDI BEN NOUR", "MOKNINE"],
+            "NABEUL": ["MENZEL TEMIME", "KORBA", "SOLIMAN", "NABEUL", "DOUALA", "MAAMOURA", "DAR ALLOUCHE", "EL HAOUARIA", "TOZGRANE", "AZMOUR", "MENZEL SALEM", "BENI-KHALED", "GROMBALIA", "BOUARGOUB", "HAMMAMET"],
+            "SFAX": ["EL AMRA", "BOUJARBOU", "MENZEL CHAKER", "SKHIRA", "MELLITA KERKENNAH", "KERKENAH", "EL BDARNA", "MAHRES", "GHREIBA", "BIR ALI BEN KHELIFA", "JBENIANA", "HENCHA", "SFAX", "AGAREB"],
+            "SIDI BOUZID": ["CABELET OUELED ASKER", "OULED HAFFOUZ", "ERREGUEB", "ESSAIDA", "SOUK DJEDID", "KM 102", "MENZEL BOUZAIENE", "MEKNASSY", "JELMA", "SIDI BOUZID", "BEN AOUN"],
+            "SILIANA": ["ROUHIA", "BOUARADA", "GAAFOUR", "BARGOU", "SILIANA", "MAKTHAR"],
+            "SOUSSE": ["KONDAR", "KALAA KBIRA", "SIDI EL HENI", "BEL OUM", "SIDI KHLIFA", "MENZEL DAR BEL OUAER", "HERGLA", "SIDI BOU ALI", "M'SAKEN", "HAMMAM SOUSSE", "SOUSSE"],
+            "TATAOUINE": ["SMAR", "REMADA", "TATAOUINE", "BIR LAHMAR"],
+            "TOZEUR": ["TOZEUR", "DEGACHE", "NEFTA", "HASOUA"],
+            "TUNIS": ["LA GOULETTE", "CITE ELKHADRA", "SIDI BOUSAID", "TUNIS VILLE", "KABARIA", "JEBEL JELLOUD", "EL AOUINA", "LE BARDO", "KSAR SAID", "EZZOUHOUR", "GAMMARTH"],
+            "ZAGHOUAN": ["BIR MCHERGUA", "EL FAHS", "ZAGHOUAN", "HAMMAM ZRIBA", "NADOUR"]
+        };
+
+        // Populate LIBGVR dropdown
+        const libgvrSelect = document.getElementById('libgvr');
+        for (const libgvr in data) {
+            const option = document.createElement('option');
+            option.value = libgvr;
+            option.textContent = libgvr;
+            libgvrSelect.appendChild(option);
+        }
+
+        // Function to update LIBLOC options based on selected LIBGVR
+        function updateLiblocOptions() {
+            const liblocSelect = document.getElementById('libloc');
+            const selectedLibgvr = libgvrSelect.value;
+
+            // Clear existing options in LIBLOC
+            liblocSelect.innerHTML = '<option value="">Select a LIBLOC</option>';
+
+            // Populate LIBLOC based on selected LIBGVR
+            if (selectedLibgvr && data[selectedLibgvr]) {
+                data[selectedLibgvr].forEach(libloc => {
+                    const option = document.createElement('option');
+                    option.value = libloc;
+                    option.textContent = libloc;
+                    liblocSelect.appendChild(option);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
